@@ -46,8 +46,8 @@ jobs:
         working-directory: testing/e2e
         run: docker compose down -v
   create_tag:
-    runs-on: ubuntu-latest
     needs: [build, e2e-tests]
+    runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     outputs:
       SYSTEM_BACKUPPER_VERSION: ${{ steps.create_tag.outputs.SYSTEM_BACKUPPER_VERSION }}
@@ -84,6 +84,7 @@ jobs:
 
   publish-to-dockerhub:
     needs: create_tag
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
         uses: actions/checkout@v6
