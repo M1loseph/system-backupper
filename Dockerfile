@@ -50,7 +50,7 @@ RUN apt-get update && \
 RUN groupadd -r appuser && useradd --no-log-init -r -g appuser -u 10001 --home /nonexistent --shell /sbin/nologin appuser
 
 COPY --from=build /build/system-backupper/target/release/system-backupper /system-backupper/system-backupper
-COPY system-backupper/migrations /system-backupper/migrations/
+COPY migrations /system-backupper/migrations/
 RUN chown -R appuser:appuser /system-backupper
 
 USER appuser
