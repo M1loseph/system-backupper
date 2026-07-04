@@ -113,7 +113,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
-          file: "system-backupper/Dockerfile"
+          file: Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/system-backupper:${{ needs.create_tag.outputs.SYSTEM_BACKUPPER_VERSION }}
