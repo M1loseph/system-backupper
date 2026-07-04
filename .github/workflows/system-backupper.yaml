@@ -1,0 +1,109 @@
+name: System Backupper Continuous Integration
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          components: rustfmt
+      - run: cargo fmt --check --all
+      - run: cargo build
+      - run: cargo test
+
+  e2e-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13' 
+
+      - name: Set up Python venv and dependencies
+        working-directory: testing/e2e
+        run: pip install -r requirements.txt
+
+      - name: Build docker image
+        working-directory: testing/e2e
+        run: docker compose build
+
+      - name: Setup testing environment
+        working-directory: testing/e2e
+        run: docker compose up -d --wait
+
+      - name: Run e2e tests
+        working-directory: testing/e2e
+        run: pytest *.py
+
+      - name: Tear down testing environment
+        if: always()
+        working-directory: testing/e2e
+        run: docker compose down -v
+  create_tag:
+    runs-on: ubuntu-latest
+    needs: [build, e2e-tests]
+    if: github.ref == 'refs/heads/main'
+    outputs:
+      SYSTEM_BACKUPPER_VERSION: ${{ steps.create_tag.outputs.SYSTEM_BACKUPPER_VERSION }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Assert current commit does not have a tag
+        run: |
+          HEAD_TAGS=$(git tag --points-at HEAD)
+          if [ -n "$HEAD_TAGS" ]; then
+            echo "Current commit already has a tag. Skipping release."
+            exit 1
+          fi
+
+      - name: Create a tag
+        id: create_tag
+        run: |
+          VERSION=$(git describe --tags --abbrev=0)
+
+          MAJOR_VERSION=$(echo $VERSION | cut -d. -f 1)
+          MINOR_VERSION=$(echo $VERSION | cut -d. -f 2)
+
+          NEW_MINOR_VERSION=$((MINOR_VERSION + 1))
+
+          NEW_VERSION="${MAJOR_VERSION}.${NEW_MINOR_VERSION}"
+          git tag ${NEW_VERSION}
+          git push --tags
+          echo "SYSTEM_BACKUPPER_VERSION=${NEW_VERSION}" >> "$GITHUB_OUTPUT"
+
+
+  publish-to-dockerhub:
+    needs: create_tag
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          file: "system-backupper/Dockerfile"
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/system-backupper:${{ needs.create_tag.outputs.SYSTEM_BACKUPPER_VERSION }}

@@ -1,0 +1,32 @@
+[
+  {
+    "_id": {
+      "$oid": "67b89bc05175e66b3331db6f"
+    },
+    "username": "one"
+  },
+  {
+    "_id": {
+      "$oid": "67b89bd35175e66b3331db70"
+    },
+    "username": "two"
+  },
+  {
+    "_id": {
+      "$oid": "67b89c1a0c20baa0f567214b"
+    },
+    "username": "three"
+  },
+  {
+    "_id": {
+      "$oid": "67b89c1a0c20baa0f567214c"
+    },
+    "username": "four"
+  },
+  {
+    "_id": {
+      "$oid": "67b89c1a0c20baa0f567214d"
+    },
+    "username": "five"
+  }
+]

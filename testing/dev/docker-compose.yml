@@ -1,0 +1,19 @@
+services:
+  mongo:
+    image: mongo:8.0.4
+    container_name: system-backuper-mongo
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: username
+      MONGO_INITDB_ROOT_PASSWORD: password
+  postgres:
+    image: postgres:17.3
+    container_name: system-backuper-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_USER: username
+      POSTGRES_DB: testdb
+     

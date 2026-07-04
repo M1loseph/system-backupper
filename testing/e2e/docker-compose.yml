@@ -1,0 +1,68 @@
+services:
+  mongo-source:
+    image: mongo:8.0.4
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: username
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: testdb
+    healthcheck:
+      test: [ "CMD", "mongosh", "--username", "username", "--password", "password", "--eval", "db.adminCommand('ping')" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  mongo-target:
+    image: mongo:8.0.4
+    ports:
+      - "27016:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: username
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: testdb
+    healthcheck:
+      test: [ "CMD", "mongosh", "--username", "username", "--password", "password", "--eval", "db.adminCommand('ping')" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  postgres-source:
+    image: postgres:17.3
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: username
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: testdb
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "username" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  postgres-target:
+    image: postgres:17.3
+    ports:
+      - "5431:5432"
+    environment:
+      POSTGRES_USER: username
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: testdb
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "username" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  system-backupper:
+    build:
+      context: ../../../
+      dockerfile: system-backupper/Dockerfile
+    ports:
+      - "2000:2000"
+    environment:
+      SB_BACKUP_TARGETS: mongodbSource,MongoDB,mongodb://username:password@mongo-source:27017/testdb?authSource=admin;mongodbTarget,MongoDB,mongodb://username:password@mongo-target:27017/testdb?authSource=admin;mongodbWithTypo,MongoDB,mongodb://sername:password@mongo-source:27017/testdb?authSource=admin;postgresSource,Postgres,postgres://username:password@postgres-source:5432/testdb;postgresTarget,Postgres,postgres://username:password@postgres-target:5432/testdb;postgresWithTypo,Postgres,postgres://username:assword@postgres-target:5432/testdb
+      RUST_LOG: info
+    healthcheck:
+      test: [ "CMD", "curl", "http://localhost:2000/internal/status/health" ]
+      start_period: 30s
+      interval: 5s
+      timeout: 5s
+      retries: 5

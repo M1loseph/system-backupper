@@ -1,0 +1,33 @@
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    schedule:
+      interval: "monthly"
+    commit-message:
+      prefix: "dependabot:"
+    groups:
+      all:
+        patterns:
+          - "*"
+    cooldown:
+      default-days: 7
+  - package-ecosystem: "docker"
+    schedule:
+      interval: "monthly"
+    commit-message:
+      prefix: "dependabot:"
+    groups:
+      all:
+        patterns:
+          - "*"
+    cooldown:
+      default-days: 7
+  - package-ecosystem: "cargo"
+    schedule:
+      interval: "monthly"
+    groups:
+      all:
+        patterns:
+          - "*"
+    cooldown:
+      default-days: 7
