@@ -14,9 +14,7 @@ RUN apt-get update && apt-get install -y gcc-aarch64-linux-gnu gcc-x86-64-linux-
 
 WORKDIR /build/system-backupper
 
-COPY system-backupper .
-COPY lib/dotenv /build/lib/dotenv
-COPY lib/migrations /build/lib/migrations
+COPY . .
 
 RUN if [[ "${TARGETARCH}" == "amd64" ]]; \
     then \
