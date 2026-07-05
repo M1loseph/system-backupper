@@ -6,6 +6,11 @@ updates:
       interval: "monthly"
     commit-message:
       prefix: "dependabot:"
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-patch"
+          - "version-update:semver-minor"
     groups:
       all:
         patterns:
