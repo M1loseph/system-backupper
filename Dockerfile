@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM rust:1.90.0-bookworm AS build
+FROM --platform=$BUILDPLATFORM rust:1.96.1-bookworm AS build
 ARG TARGETOS
 ARG TARGETARCH
 
@@ -23,7 +23,7 @@ RUN if [[ "${TARGETARCH}" == "amd64" ]]; \
       cargo build --release --target aarch64-unknown-linux-gnu && mv ./target/aarch64-unknown-linux-gnu/release/system-backupper ./target/release/system-backupper; \
     fi
 
-FROM ubuntu:24.04
+FROM ubuntu:26.04
 
 RUN apt-get update && \
     # Install PostgreSQL pg_dump and pg_restore
